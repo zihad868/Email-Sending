@@ -1,0 +1,43 @@
+// datasource and generator setup
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+}
+
+model User {
+  id String @id @default(cuid())
+
+  fullName   String
+  employeeId String?
+  email      String  @unique
+  password   String
+  branch     String?
+  image      String?
+
+  role UserRole @default(EMPLOYEE)
+
+  otp          String?
+  otpExpiresAt DateTime?
+  isVerified   Boolean   @default(false)
+
+  accessToken  String?
+  refreshToken String?
+
+  activeStatus Boolean @default(true)
+
+  stripeCustomerId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
