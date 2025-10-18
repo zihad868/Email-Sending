@@ -48,7 +48,7 @@ const createEmployee = async (payload: TRegister) => {
 
     const user = await tx.user.create({
       data: {
-        fullName: payload.firstName,
+        fullName: payload.firstName + " " + payload.lastName,
         email: payload.email,
         password: hashedPassword,
         role: "EMPLOYEE",
@@ -296,9 +296,7 @@ const getMyProfile = async (email: string) => {
     select: {
       id: true,
       fullName: true,
-      employeeId: true,
       email: true,
-      branch: true,
       image: true,
       role: true,
       isVerified: true,
