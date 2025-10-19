@@ -1,8 +1,13 @@
 import sgMail from "@sendgrid/mail";
 import config from "../../config";
 
-if (!config.sendGrid.api_key || !(config.sendGrid.api_key as string).startsWith("SG.")) {
-  console.error('SendGrid API key missing or invalid. Ensure SENDGRID_API_KEY starts with "SG." in your .env');
+if (
+  !config.sendGrid.api_key ||
+  !(config.sendGrid.api_key as string).startsWith("SG.")
+) {
+  console.error(
+    'SendGrid API key missing or invalid. Ensure SENDGRID_API_KEY starts with "SG." in your .env'
+  );
 } else {
   sgMail.setApiKey(config.sendGrid.api_key as string);
 }

@@ -49,7 +49,9 @@ const worker = new Worker(
         select: { email: true },
       });
 
-  const emails = users.map((u: { email: string | null }) => u.email).filter(Boolean) as string[];
+      const emails = users
+        .map((u: { email: string | null }) => u.email)
+        .filter(Boolean) as string[];
 
       // chunk and enqueue send-bulk jobs for parallelism
       for (let i = 0; i < emails.length; i += BATCH_SIZE) {
