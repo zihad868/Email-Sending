@@ -1,6 +1,7 @@
 import { Server } from "http";
 import app from "./app";
 import config from "./config";
+import { emailStartupService } from "./utils/EmailSendingFeature/startup";
 
 let server: Server;
 
@@ -10,6 +11,8 @@ function main() {
     server = app.listen(config.port, () => {
       console.log("Server is running on port", config.port);
     });
+
+    emailStartupService();
   } catch (error) {
     console.log(error);
   }
