@@ -1,8 +1,8 @@
-import "dotenv/config";
-import "./queues/email.worker"; // start worker
-import { sendBulkEmails } from "./email.service";
+// somewhere on server startup
+import "./queues/email.worker"; // ensure worker process is started (if running worker in same process)
+import { registerSendAllJob } from "./scheduler";
 
-export const initalizedEmail = () => {
-  const emails = ["user1@test.com", "user2@test.com", "user3@test.com"];
-  sendBulkEmails(emails, "Welcome!", "<h1>Hello!</h1>");
-};
+registerSendAllJob(
+  "Weekly project update", // example subject; set dynamically or load from DB/config
+  "<p>Your HTML body here</p>"
+);

@@ -1,7 +1,13 @@
 import sgMail from "@sendgrid/mail";
 import config from "../../config";
 
-sgMail.setApiKey(config.sendGrid.api_key as string);
+// Validate SendGrid API key early so errors are clear at startup
+if (!config.sendGrid.api_key || !(config.sendGrid.api_key as string).startsWith("SG.")) {
+  console.error('SendGrid API key missing or invalid. Ensure SENDGRID_API_KEY starts with "SG." in your .env');
+  // don't throw here to allow fallback to nodemailer if you want, but log clearly
+} else {
+  sgMail.setApiKey(config.sendGrid.api_key as string);
+}
 
 const sendGridBulkEmailSender = async (
   emails: { subject: string; email: string; html: string }[]
