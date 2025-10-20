@@ -5,6 +5,8 @@ import { emailQueue } from "./email.queue";
 import sendGridBulkEmailSender from "../../helpars/emailSender/sendGridBulkEmailSender";
 import prisma from "../../shared/prisma";
 import { clearRecipientsCache } from "./email.cache";
+import emailSender from "../../helpars/emailSender/emailSender";
+import config from "../../config";
 
 const BATCH_SIZE = 100; // tune based on SendGrid rate limits
 
@@ -18,14 +20,37 @@ const worker = new Worker(
         html: string;
       };
 
-      // SendGrid bulk util expects an array of {subject, email, html}
-      const messages = recipients.map((email) => ({
-        subject,
-        email,
-        html,
-      }));
+      // Prefer SendGrid bulk send when API key is configured
+      try {
+        if (
+          config.sendGrid.api_key &&
+          typeof config.sendGrid.api_key === "string"
+        ) {
+          const messages = recipients.map((email) => ({
+            subject,
+            email,
+            html,
+          }));
+          await sendGridBulkEmailSender(messages);
+        } else {
+          // fallback: send one-by-one via nodemailer
+          const results = await Promise.allSettled(
+            recipients.map((email) => emailSender(subject, email, html))
+          );
 
-      await sendGridBulkEmailSender(messages);
+          const rejected = results.filter((r) => r.status === "rejected");
+          if (rejected.length > 0) {
+            // Log failures and throw to let Bull retry according to attempts/backoff
+            console.error(`${rejected.length} emails failed in send-bulk job`);
+            throw new Error(
+              `${rejected.length} emails failed in send-bulk job`
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Error in send-bulk handler:", err);
+        throw err; // let Bull handle retries
+      }
 
       // clear cache for this batch if cacheKey provided
       const cacheKey = job.data?.cacheKey as string | undefined;
